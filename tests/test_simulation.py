@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from heavyrnn.simulation import simulate_batch, stable_sech_squared
+from simulation import simulate_batch, stable_sech_squared
 
 
 def test_stable_sech_squared_matches_direct_formula_and_handles_extremes() -> None:

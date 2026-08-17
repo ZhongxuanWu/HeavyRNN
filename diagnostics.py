@@ -1,4 +1,4 @@
-"""Aggregation helpers for Lyapunov and activity diagnostics."""
+"""Internal aggregation helpers for Lyapunov and activity diagnostics."""
 
 from __future__ import annotations
 

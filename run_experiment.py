@@ -7,8 +7,8 @@ import json
 import sys
 from typing import Sequence
 
-from .config import ConfigurationError, load_config
-from .experiment import inspect_experiment, run_experiment
+from config import ConfigurationError, load_config
+from experiment import inspect_experiment, run_experiment
 
 
 def _format_bytes(value: int) -> str:
@@ -22,7 +22,7 @@ def _format_bytes(value: int) -> str:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="heavyrnn")
+    parser = argparse.ArgumentParser(prog="run_experiment.py")
     subparsers = parser.add_subparsers(dest="command", required=True)
     for name, help_text in (
         ("inspect", "validate and estimate a sweep without running it"),
@@ -71,7 +71,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         RuntimeError,
         ValueError,
     ) as exc:
-        print(f"heavyrnn: error: {exc}", file=sys.stderr)
+        print(f"run_experiment.py: error: {exc}", file=sys.stderr)
         return 2
 
 

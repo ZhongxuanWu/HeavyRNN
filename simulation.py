@@ -1,4 +1,4 @@
-"""Batched autonomous heavy-tailed RNN simulation and Lyapunov analysis."""
+"""Internal batched heavy-tailed RNN simulation and Lyapunov analysis."""
 
 from __future__ import annotations
 

@@ -22,16 +22,16 @@ import numpy as np
 from omegaconf import OmegaConf
 import torch
 
-from .config import ExperimentConfig, as_dictconfig, validate_config
-from .diagnostics import AggregateRecord, TransitionRecord, aggregate_trials, locate_transitions
-from .sampling import (
+from config import ExperimentConfig, as_dictconfig, validate_config
+from diagnostics import AggregateRecord, TransitionRecord, aggregate_trials, locate_transitions
+from sampling import (
     INITIAL_STATE_STREAM,
     RECURRENT_WEIGHT_STREAM,
     derive_seed,
     make_generator,
     sample_recurrent_weight_batch,
 )
-from .simulation import SimulationBatchResult, simulate_batch
+from simulation import SimulationBatchResult, simulate_batch
 
 
 ARTIFACT_SCHEMA_VERSION = 2
@@ -49,11 +49,11 @@ def _exception_summary(exc: BaseException) -> str:
 
 
 def _numerical_source_digest(paths: Sequence[Path] | None = None) -> str:
-    """Hash the installed numerical source, including uncommitted edits."""
+    """Hash the numerical source, including uncommitted edits."""
 
     if paths is None:
-        package_directory = Path(__file__).resolve().parent
-        paths = tuple(package_directory / name for name in _NUMERICAL_SOURCE_FILES)
+        source_directory = Path(__file__).resolve().parent
+        paths = tuple(source_directory / name for name in _NUMERICAL_SOURCE_FILES)
     digest = hashlib.sha256()
     for path in sorted((Path(path) for path in paths), key=lambda item: item.name):
         name = path.name.encode("utf-8")
@@ -421,30 +421,6 @@ def _simulate_conditions(
     )
 
 
-def simulate_conditions(
-    conditions: Sequence[ConditionSpec],
-    config: ExperimentConfig,
-) -> SimulationBatchResult:
-    """Simulate one homogeneous condition batch without writing run artifacts."""
-
-    validate_config(config)
-    if not conditions:
-        raise ValueError("conditions must not be empty")
-    torch.set_float32_matmul_precision(config.runtime.matmul_precision)
-    device = torch.device(config.runtime.device)
-    if device.type == "cuda":
-        if device.index is None:
-            raise ValueError("runtime.device must select one CUDA device, for example 'cuda:0'")
-        try:
-            torch.cuda.set_device(device)
-            torch.empty(0, device=device)
-        except Exception as exc:
-            raise RuntimeError(
-                f"could not initialize {device}: {_exception_summary(exc)}"
-            ) from exc
-    return _simulate_conditions(tuple(conditions), config, device)
-
-
 def _atomic_text(path: Path, content: str) -> None:
     temporary = path.with_name(f".{path.name}.tmp")
     temporary.write_text(content, encoding="utf-8")
@@ -766,7 +742,7 @@ def _write_csv(path: Path, rows: Iterable[dict[str, object]], fieldnames: Sequen
 def _environment_metadata(
     device: torch.device, implementation_identity: dict[str, Any]
 ) -> dict[str, Any]:
-    project_root = Path(__file__).resolve().parents[2]
+    project_root = Path(__file__).resolve().parent
     try:
         revision = subprocess.run(
             ["git", "rev-parse", "HEAD"],
@@ -1122,16 +1098,3 @@ def run_experiment(
         aggregates_path=aggregates_path,
         transitions_path=transitions_path,
     )
-
-
-__all__ = [
-    "ConditionSpec",
-    "ExperimentResult",
-    "OutputDirectoryError",
-    "estimate_condition_bytes",
-    "estimate_output_bytes",
-    "expand_conditions",
-    "inspect_experiment",
-    "run_experiment",
-    "simulate_conditions",
-]

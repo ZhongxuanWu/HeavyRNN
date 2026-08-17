@@ -1,7 +1,7 @@
 # HeavyRNN
 
-HeavyRNN is a lightweight PyTorch reimplementation of the flagship experiment
-from *Slow Transition to Low-Dimensional Chaos in Heavy-Tailed Recurrent Neural
+HeavyRNN is a research-script reimplementation of the flagship experiment from
+*Slow Transition to Low-Dimensional Chaos in Heavy-Tailed Recurrent Neural
 Networks*. It simulates a random, untrained, one-layer tanh RNN,
 
 \[
@@ -20,25 +20,27 @@ and Lyapunov diagnostics. Independent network trials are batched on a selected
 PyTorch device. Training, plotting, noisy-input experiments, and the paper's
 broader analyses are intentionally out of scope.
 
-## Installation
+## Setup
 
 The provided `agent-codex` conda environment already contains a CUDA-enabled
-PyTorch stack. Install this project in editable mode from the repository root:
+PyTorch stack. To install the script's runtime and test dependencies in another
+environment, run from the repository root:
 
 ```bash
-conda run -n agent-codex python -m pip install -e '.[test]'
+python -m pip install -r requirements.txt
 ```
 
-The only runtime dependencies declared by the package are PyTorch, NumPy, and
-OmegaConf. CUDA is optional; use `device=cpu` for a CPU run.
+CUDA is optional; use `runtime.device=cpu` for a CPU run. HeavyRNN is not an
+installable Python package and does not expose a supported import API.
 
 ## Run the experiment
 
-Start with the small smoke configuration:
+`run_experiment.py` is the supported interface. Start with the small smoke
+configuration:
 
 ```bash
-conda run -n agent-codex heavyrnn inspect --config configs/smoke.yaml
-conda run -n agent-codex heavyrnn run --config configs/smoke.yaml
+conda run -n agent-codex python run_experiment.py inspect --config configs/smoke.yaml
+conda run -n agent-codex python run_experiment.py run --config configs/smoke.yaml
 ```
 
 `inspect` validates the configuration and reports the expanded condition count
@@ -46,8 +48,8 @@ and estimated storage and device-memory requirements without simulating. The
 paper-scale sweep is configured separately:
 
 ```bash
-conda run -n agent-codex heavyrnn inspect --config configs/flagship.yaml
-conda run -n agent-codex heavyrnn run --config configs/flagship.yaml
+conda run -n agent-codex python run_experiment.py inspect --config configs/flagship.yaml
+conda run -n agent-codex python run_experiment.py run --config configs/flagship.yaml
 ```
 
 This implementation intentionally uses one GPU process. On a host exposing
@@ -56,48 +58,33 @@ multiple physical GPUs, select one before Python starts while continuing to use
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 conda run -n agent-codex \
-  heavyrnn run --config configs/flagship.yaml
+  python run_experiment.py run --config configs/flagship.yaml
 ```
 
 The flagship defaults cover three network sizes, three tail indices, 50 gains,
-and 10 trials. The activity tensors alone occupy **8.4 GB** (decimal); the full
-configured array payload, including Lyapunov diagnostics, is about **8.78 GB**
-(**8.17 GiB**) before NPZ-container and filesystem overhead. Run `inspect`
-before launching it and confirm that the output filesystem has sufficient free
-space.
+and 10 trials, for 4,500 conditions. The activity tensors alone occupy
+**8.4 GB** (decimal); the full configured array payload, including Lyapunov
+diagnostics, is about **8.78 GB** (**8.17 GiB**) before NPZ-container and
+filesystem overhead. Run `inspect` before launching it and confirm that the
+output filesystem has sufficient free space.
 
 Configuration uses YAML with OmegaConf dot-list overrides appended to either
 command. For example:
 
 ```bash
-conda run -n agent-codex heavyrnn run \
+conda run -n agent-codex python run_experiment.py run \
   --config configs/smoke.yaml \
   runtime.device=cpu sweep.trials=2 output.directory=runs/cpu-smoke
 
-conda run -n agent-codex heavyrnn run \
+conda run -n agent-codex python run_experiment.py run \
   --config configs/flagship.yaml \
   runtime.device=cuda:0 runtime.batch_size=auto output.resume=true
 ```
 
-The same runner is available as a Python API:
-
-```python
-from heavyrnn import load_config, run_experiment
-
-config = load_config("configs/smoke.yaml", ["runtime.device=cpu"])
-result = run_experiment(config)
-print(result.metrics_path)
-```
-
-For lower-level use, `heavyrnn.simulate_batch` accepts batched recurrent
-matrices shaped `[trials, N, N]` and initial states shaped `[trials, N]`.
-`heavyrnn.simulate_conditions` accepts homogeneous `ConditionSpec` objects
-returned by `expand_conditions` and performs sampling plus simulation without
-writing an experiment directory.
-
 Sweep values under `sweep`, simulation lengths and dtype under `simulation`,
 device and batching under `runtime`, and artifact/resume behavior under `output`
 are configurable. See the supplied YAML files for the exact keys and defaults.
+The top-level support modules are internal implementation details.
 
 ## Results
 
@@ -117,17 +104,18 @@ conditions. Resume validation rejects artifacts produced by a different
 numerical source tree, PyTorch build, CUDA build, device class, or artifact
 schema, verifies NPZ payload CRCs, and rejects foreign condition files. This
 prevents a long sweep from silently mixing implementations or accepting damaged
-activity. Start a new output directory after a compatibility change. Generated
-output belongs under `runs/` or `artifacts/`, both of which are excluded from
-version control.
+activity. Because relocating the numerical modules changes their source
+fingerprint, runs made by an older package-based checkout must use a new output
+directory.
 
-Seeds make weights and initial states independent of sweep ordering and trial
-chunking. Chaotic trajectories are not promised to be bitwise identical when
-the CUDA backend, PyTorch version, or effective batch shape changes: tiny kernel
-roundoff differences are exponentially amplified. Each artifact therefore
-records its effective batch identifier, ordered member list, size, and position.
-Compare aggregate statistics, not individual time samples, across different
-execution layouts.
+Generated output belongs under `runs/` or `artifacts/`, both of which are
+excluded from version control. Seeds make weights and initial states independent
+of sweep ordering and trial chunking. Chaotic trajectories are not promised to
+be bitwise identical when the CUDA backend, PyTorch version, or effective batch
+shape changes: tiny kernel roundoff differences are exponentially amplified.
+Each artifact therefore records its effective batch identifier, ordered member
+list, size, and position. Compare aggregate statistics, not individual time
+samples, across different execution layouts.
 
 If a QR stretch underflows to zero, it is floored at the smallest positive
 normal value of the dynamics dtype. Per-exponent and total floor counts are
@@ -151,5 +139,5 @@ CUDA_VISIBLE_DEVICES=0 conda run -n agent-codex pytest
 ## Original study code
 
 [`original/`](original/) is retained as an archival copy of the study's source
-and supporting material. The new package does not modify or import it; it is a
-clean, focused reimplementation of the autonomous flagship experiment.
+and supporting material. The research scripts do not modify or import it; they
+are a clean, focused reimplementation of the autonomous flagship experiment.

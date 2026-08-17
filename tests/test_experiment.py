@@ -8,15 +8,15 @@ import numpy as np
 import pytest
 import torch
 
-from heavyrnn.config import load_config
-from heavyrnn.experiment import (
+from config import load_config
+from experiment import (
     OutputDirectoryError,
     _numerical_source_digest,
+    _simulate_conditions,
     expand_conditions,
     run_experiment,
-    simulate_conditions,
 )
-from heavyrnn.sampling import INITIAL_STATE_STREAM, RECURRENT_WEIGHT_STREAM, derive_seed
+from sampling import INITIAL_STATE_STREAM, RECURRENT_WEIGHT_STREAM, derive_seed
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -110,20 +110,25 @@ def test_numerical_source_digest_tracks_raw_source_bytes(tmp_path: Path) -> None
     assert before != after
 
 
-def test_simulate_conditions_rejects_stale_identity_and_seeds(tmp_path: Path) -> None:
+def test_internal_simulation_rejects_stale_identity_and_seeds(tmp_path: Path) -> None:
     config = _tiny_config(tmp_path / "unused")
     condition = expand_conditions(config)[0]
+    device = torch.device(config.runtime.device)
 
     with pytest.raises(ValueError, match="condition_id"):
-        simulate_conditions(
-            [replace(condition, condition_id="stale-condition")], config
+        _simulate_conditions(
+            [replace(condition, condition_id="stale-condition")], config, device
         )
 
     with pytest.raises(ValueError, match="weight_seed"):
-        simulate_conditions([replace(condition, weight_seed=condition.weight_seed + 1)], config)
+        _simulate_conditions(
+            [replace(condition, weight_seed=condition.weight_seed + 1)], config, device
+        )
 
     with pytest.raises(ValueError, match="state_seed"):
-        simulate_conditions([replace(condition, state_seed=condition.state_seed + 1)], config)
+        _simulate_conditions(
+            [replace(condition, state_seed=condition.state_seed + 1)], config, device
+        )
 
 
 def test_tiny_cpu_experiment_writes_complete_artifacts_and_resumes(tmp_path: Path) -> None:

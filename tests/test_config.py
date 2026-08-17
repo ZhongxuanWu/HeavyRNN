@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from heavyrnn.config import ConfigurationError, GainSpec, expand_gains, load_config
-from heavyrnn.experiment import expand_conditions
+from config import ConfigurationError, GainSpec, expand_gains, load_config
+from experiment import expand_conditions
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

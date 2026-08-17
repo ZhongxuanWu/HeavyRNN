@@ -3,7 +3,7 @@ import math
 import pytest
 import torch
 
-from heavyrnn.sampling import (
+from sampling import (
     RECURRENT_WEIGHT_STREAM,
     derive_seed,
     sample_recurrent_weight_batch,

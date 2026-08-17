@@ -1,6 +1,6 @@
 import pytest
 
-from heavyrnn.diagnostics import (
+from diagnostics import (
     AggregateRecord,
     DiagnosticIntegrityError,
     aggregate_trials,

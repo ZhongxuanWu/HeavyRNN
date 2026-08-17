@@ -1,0 +1,4 @@
+numpy>=1.24
+omegaconf>=2.3
+pytest>=7.4
+torch>=2.1
