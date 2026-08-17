@@ -1,0 +1,32 @@
+# Paper-faithful autonomous HeavyRNN flagship sweep.
+sweep:
+  network_sizes: [1000, 3000, 10000]
+  alphas: [1.0, 1.5, 2.0]
+  gains:
+    mode: logspace
+    start: 0.01
+    stop: 10.0
+    num: 50
+    values: []
+  trials: 10
+
+simulation:
+  warmup_steps: 2900
+  measurement_steps: 100
+  num_exponents: 100
+  dtype: float32
+  initial_state_std: 1.0
+  record_activity: true
+  saturation_threshold: 0.99
+
+runtime:
+  device: cuda:0
+  batch_size: auto
+  base_seed: 40
+  matmul_precision: highest
+  memory_fraction: 0.7
+
+output:
+  directory: runs/flagship
+  resume: true
+  compressed: false

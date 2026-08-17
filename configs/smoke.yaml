@@ -1,0 +1,32 @@
+# Small CPU configuration for end-to-end development and CI checks.
+sweep:
+  network_sizes: [32]
+  alphas: [1.0, 2.0]
+  gains:
+    mode: explicit
+    start: 0.01
+    stop: 10.0
+    num: 50
+    values: [0.5, 1.0, 1.5]
+  trials: 2
+
+simulation:
+  warmup_steps: 8
+  measurement_steps: 4
+  num_exponents: 4
+  dtype: float32
+  initial_state_std: 1.0
+  record_activity: true
+  saturation_threshold: 0.99
+
+runtime:
+  device: cpu
+  batch_size: auto
+  base_seed: 0
+  matmul_precision: highest
+  memory_fraction: 0.7
+
+output:
+  directory: runs/smoke
+  resume: true
+  compressed: false
