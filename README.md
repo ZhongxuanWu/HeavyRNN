@@ -221,15 +221,15 @@ counts are stored so strongly contracting directions are not hidden.
 For each measured transition, the implementation evaluates the Jacobian at the
 state that generated that transition,
 
-\[
+$$
 J_t = \operatorname{diag}\!\left(\operatorname{sech}^2(W h_t)\right)W,
-\]
+$$
 
 and performs the canonical forward tangent update
 
-\[
+$$
 Q_{t+1}R_{t+1}=J_tQ_t.
-\]
+$$
 
 The same preactivation is used for both the state update and its derivative.
 The implementation does not use the transposed-Jacobian update.
