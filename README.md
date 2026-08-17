@@ -1,9 +1,6 @@
 # HeavyRNN
 
-HeavyRNN is a focused reimplementation of the flagship autonomous experiment
-from [*Slow Transition to Low-Dimensional Chaos in Heavy-Tailed Recurrent
-Neural Networks*](https://arxiv.org/abs/2505.09816). It simulates a random,
-untrained, one-layer tanh RNN,
+HeavyRNN is a reimplementation of the flagship experiment from [*Slow Transition to Low-Dimensional Chaos in Heavy-Tailed Recurrent Neural Networks*](https://arxiv.org/abs/2505.09816). It simulates a random, untrained, one-layer tanh RNN,
 
 $$
 h_{t+1} = \tanh(W h_t), \qquad
@@ -212,9 +209,7 @@ backend, PyTorch version, or effective batch shape changes: tiny floating-point
 differences are exponentially amplified. Compare aggregate statistics rather
 than individual time samples across different execution layouts.
 
-If a QR stretch underflows to zero, it is floored at the smallest positive
-normal value of the configured dynamics dtype. Per-exponent and total floor
-counts are stored so strongly contracting directions are not hidden.
+If a QR stretch underflows to zero, it is floored at the smallest positive value of the configured dtype. Per-exponent and total floor counts are stored so strongly contracting directions are not hidden.
 
 ## Lyapunov implementation
 
@@ -232,7 +227,6 @@ Q_{t+1}R_{t+1}=J_tQ_t.
 $$
 
 The same preactivation is used for both the state update and its derivative.
-The implementation does not use the transposed-Jacobian update.
 
 ## Development and tests
 
