@@ -247,9 +247,3 @@ With a working CUDA-enabled PyTorch installation, run the complete suite with:
 ```bash
 CUDA_VISIBLE_DEVICES=0 python -m pytest
 ```
-
-## Original study code
-
-[`original/`](original/) is retained as an archival copy of the study's public
-source and supporting material. The reimplementation does not modify or import
-it.
